@@ -21,7 +21,8 @@ class Part1:
       n = nRows
       
       # Learning rate
-      alpha = [0.0001, 0.001, 0.005, 0.01,0.1]
+      alpha = [0.00001, 0.0001, 0.001, 0.005, 0.1]
+      
       for i in range(len(alpha)):
       #Random initilization
         W = [[0.5]] * nColumns
@@ -52,7 +53,7 @@ class Part1:
         yPredict = np.dot(xTest,W)
         plt.plot(xAxis,yAxis,label=i)
       
-      plt.legend(["Alpha = 0.0001","Alpha = 0.001","Alpha = 0.005","Alpha = 0.01","Alpha = 0.1"])
+      plt.legend(["Alpha = 0.00001","Alpha = 0.0001","Alpha = 0.001","Alpha = 0.005","Alpha = 0.1"])
       plt.xlabel("Number of iterations")
       plt.ylabel("MSE")
       plt.show()
