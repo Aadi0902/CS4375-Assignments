@@ -26,7 +26,7 @@ def processedData():
         
     #https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.train_test_split.html
     from sklearn.model_selection import train_test_split
-    xTrain, xTest, yTrain, yTest = train_test_split(x, y, train_size = 0.80)
+    xTrain, xTest, yTrain, yTest = train_test_split(x, y, train_size = 0.80) # Add random_state = 3 to get consistent data similar to the report
         
     # Compute sde, mean of the data  
     scaler = StandardScaler()
