@@ -2,11 +2,10 @@ README
 
 
 Directions:
-1. Open Google Colaboratory
-2. Go to File > Upload notebook
-3. Choose files listed below in 'Files' section
-4. Run Part1.py
-5. Run Part2.py
+1. Store the given files “Part1.py”, “Part2.py” and “preProcessing.py” in one folder
+2. Run Part1.py
+3. Run Part2.py
+
 
 
 Files:
@@ -35,7 +34,7 @@ Attributes:
 1. mpg
 2. cylinders
 3. displacement
-4. horsepowe
+4. horsepower
 5. weight
 6. acceleration
 7. model year
