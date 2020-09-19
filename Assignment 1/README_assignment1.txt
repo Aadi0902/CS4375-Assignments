@@ -41,5 +41,7 @@ Attributes:
 8. origin
 9. car name
 
+For our processing, we do not use origin because it was categorical data, and car name was also not used because we concluded that it wasn’t relevant to calculating mpg.
+
 Additional Dataset information:
 archive.ics.uci.edu/ml/datasets/Auto+MPG
