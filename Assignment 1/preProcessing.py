@@ -2,7 +2,7 @@
 """
 Created on Tue Sep 15 05:06:51 2020
 
-@author: Aadi
+@author: Aadi, Andrew
 """
 import numpy as np
 import pandas as pd
@@ -43,10 +43,5 @@ def processedData():
     # Concatenate a column of '1's to the x data as bias  
     xTrain = np.c_[xTrain, np.ones((len(xTrain), 1))]
     xTest = np.c_[xTest, np.ones((len(xTest), 1))]
-             
-              
-    print("Actual Y test values: ",yTest[0:10])
-    #self.UsingMLlibraries(xTrain,yTrain,xTest,yTest)
-    #self.notUsingMLlibraries(xTrain,yTrain,xTest,yTest)
               
     return (xTrain, yTrain, xTest, yTest)

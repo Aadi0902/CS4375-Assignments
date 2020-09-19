@@ -2,7 +2,7 @@
 """
 Created on Tue Sep 15 05:25:59 2020
 
-@author: Aadi
+@author: Aadi, Andrew
 """
 from sklearn.linear_model import SGDRegressor
 import preProcessing as prep
@@ -17,9 +17,18 @@ class Part2:
       sgdR = SGDRegressor(tol=1e-4, penalty=None)
       sgdR.n_iter = np.ceil(10000000)
       sgdR.fit(xTrain,yTrain)
-
+      
       yPredict = sgdR.predict(xTest)
-      print("ML library predicted values: ",yPredict[0:10])
-
+      
+      print("Part 2: Using ML libraries")
+      print("First 10 values:\n")
+      print("Predicted MPG values    Actual MPG values")
+      for ind in range(10):
+        print("   %f\t\t    %f" % (yPredict[ind],yTest[ind]))
+        
+#      Used for MSE calculations  
+#      E = yTest - yPredict
+#      MSE = (1/(2*len(xTest)))*(np.dot(E.T,E))
+#      print(MSE)
 tst = Part2()
 tst.main()
