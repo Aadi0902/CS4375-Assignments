@@ -32,17 +32,18 @@ class NeuralNet:
         # train refers to the training dataset
         # test refers to the testing dataset
         # h represents the number of neurons in the hidden layer
-        raw_input = pd.read_csv(dataFile)
+        #raw_input = pd.read_csv(dataFile)
         # TODO: Remember to implement the preprocess method
-        self.X, self.xTest, self.y, self.yTest = self.preprocess(raw_input)
+        self.X, self.xTest, self.y, self.yTest = self.preprocessData(dataFile)
         #self.train_dataset, self.test_dataset = train_test_split(processed_data)
-        ncols = len(self.xTrain.columns)
-        nrows = len(self.xTrain.index)
+        ncols = len(self.X[0])
+        nrows = len(self.X)
         #self.X = self.train_dataset.iloc[:, 0:(ncols -1)].values.reshape(nrows, ncols-1)
         #self.y = self.train_dataset.iloc[:, (ncols-1)].values.reshape(nrows, 1)
         #
         # Find number of input and output layers from the dataset
         #
+        self.y = np.reshape(self.y,(nrows,1))
         input_layer_size = len(self.X[1])
         if not isinstance(self.y[0], np.ndarray):
             self.output_layer_size = 1
@@ -100,7 +101,7 @@ class NeuralNet:
         return x * (1 - x)
     
     def __tanh_derivative(self, x):
-        return 4/((np.exp(x)+np.exp(-x))^2)
+        return (1 - x**2)
     
     def __relu_derivative(self, x):
         if x<=0:
@@ -113,9 +114,9 @@ class NeuralNet:
 
     # Below is the training function
 
-    def train(self, max_iterations=60000, learning_rate=0.25):
+    def train(self, max_iterations=6000, learning_rate=0.25):
         for iteration in range(max_iterations):
-            out = self.forward_pass()
+            out = self.forward_pass(self.X)
             error = 0.5 * np.power((out - self.y), 2)
             # TODO: I have coded the sigmoid activation, you have to do the rest
             self.backward_pass(out, activation="sigmoid")
@@ -138,9 +139,9 @@ class NeuralNet:
         print("The final bias vectors are (starting from input to output layers) \n" + str(self.Wb_hidden))
         print("The final bias vectors are (starting from input to output layers) \n" + str(self.Wb_output))
 
-    def forward_pass(self, activation="sigmoid"):
+    def forward_pass(self,xValue = 0, activation="sigmoid"):
         # pass our inputs through our neural network
-        in_hidden = np.dot(self.X, self.W_hidden) + self.Wb_hidden
+        in_hidden = np.dot(xValue, self.W_hidden) + self.Wb_hidden
         # TODO: I have coded the sigmoid activation, you have to do the rest
         if activation == "sigmoid":
             self.X_hidden = self.__sigmoid(in_hidden)
@@ -189,51 +190,51 @@ class NeuralNet:
     # You can assume that the test dataset has the same format as the training dataset
     # You have to output the test error from this function
 
-    def predict(self, header = True):
+    def predict(self,activation = "sigmoid", header = True):
         # TODO: obtain prediction on self.test_dataset
-        self.yPredict = np.dot(self.xTest,self.W_output) + self.Wb_output
-        
+        self.yPredict = self.forward_pass(self.xTest,activation)
+        self.yPredict = self.yPredict.flatten()
         diff = self.yPredict - self.yTest
         testError = 0.5 * np.dot(diff.T,diff)
         return testError
 
-def preprocessData(datafile):
-    df = pd.read_csv(datafile,header=None,delimiter = ",",na_values=[" "])
-    # Drop empty rows i.e. rows with " "
-    df = df.dropna()
-    
-    # Columns desciption:
-    # Front | Left | Right | Back | Motion type
-    df[[24]] = df[[24]].replace(to_replace = "Move-Forward", value = 0)
-    df[[24]] = df[[24]].replace(to_replace = "Slight-Right-Turn", value = 1)
-    df[[24]] = df[[24]].replace(to_replace = "Slight-Left-Turn", value = -1)
-    df[[24]] = df[[24]].replace(to_replace = "Sharp-Right-Turn", value = 2)
-    
-    x = df.iloc[:,0:23]
-    y = df.iloc[:,24]
-    
-    from sklearn.model_selection import train_test_split
-    xTrain, xTest, yTrain, yTest = train_test_split(x, y, train_size = 0.80) # Add random_state = 3 to get consistent data similar to the report
+    def preprocessData(self,datafile):
+        df = pd.read_csv(datafile,header=None,delimiter = ",",na_values=[" "])
+        # Drop empty rows i.e. rows with " "
+        df = df.dropna()
         
-    # Compute sde, mean of the data  
-    scaler = StandardScaler()
-    scaler.fit(xTrain)
+        # Columns desciption:
+        # Front | Left | Right | Back | Motion type
+        df[[24]] = df[[24]].replace(to_replace = "Move-Forward", value = 0)
+        df[[24]] = df[[24]].replace(to_replace = "Slight-Right-Turn", value = 1)
+        df[[24]] = df[[24]].replace(to_replace = "Slight-Left-Turn", value = -1)
+        df[[24]] = df[[24]].replace(to_replace = "Sharp-Right-Turn", value = 2)
         
-    # Transform the x data
-    xTrain = scaler.transform(xTrain)
-    xTest = scaler.transform(xTest)
-              
-    # Convert y data to lists
-    # yTrain = yTrain.tolist()
-    # yTest = yTest.tolist()
-    return xTrain, xTest, yTrain, yTest
+        x = df.iloc[:,0:23]
+        y = df.iloc[:,24]
+        
+        from sklearn.model_selection import train_test_split
+        xTrain, xTest, yTrain, yTest = train_test_split(x, y, train_size = 0.80) # Add random_state = 3 to get consistent data similar to the report
+            
+        # Compute sde, mean of the data  
+        scaler = StandardScaler()
+        scaler.fit(xTrain)
+            
+        # Transform the x data
+        xTrain = scaler.transform(xTrain)
+        xTest = scaler.transform(xTest)
+                  
+        # Convert y data to lists
+        yTrain = yTrain.tolist()
+        yTest = yTest.tolist()
+        return xTrain, xTest, yTrain, yTest
     
     
 
 if __name__ == "__main__":
     # perform pre-processing of both training and test part of the test_dataset
     # split into train and test parts if needed
-    preprocessData("https://archive.ics.uci.edu/ml/machine-learning-databases/00194/sensor_readings_24.data")
+    #preprocessData("https://archive.ics.uci.edu/ml/machine-learning-databases/00194/sensor_readings_24.data")
     neural_network = NeuralNet("https://archive.ics.uci.edu/ml/machine-learning-databases/00194/sensor_readings_24.data")
     neural_network.train()
     testError = neural_network.predict()
