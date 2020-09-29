@@ -32,7 +32,8 @@ class NeuralNet:
         # train refers to the training dataset
         # test refers to the testing dataset
         # h represents the number of neurons in the hidden layer
-        raw_input = pd.read_csv(dataFile)
+        raw_input = pd.read_csv("https://archive.ics.uci.edu/ml/machine-learning-databases/00194/sensor_readings_24.data",
+    header=None)
         # TODO: Remember to implement the preprocess method
         processed_data = self.preprocess(raw_input)
         self.train_dataset, self.test_dataset = train_test_split(processed_data)
@@ -195,7 +196,25 @@ class NeuralNet:
         self.X_test = self.test_dataset.iloc[:, 0:(ncols -1)].values.reshape(nrows, ncols-1)
         self.y_test = self.test_dataset.iloc[:, (ncols-1)].values.reshape(nrows, 1)
         
-        return 0
+    # pass our inputs through our neural network
+        in_hidden = np.dot(self.X_test, self.W_hidden) + self.Wb_hidden
+        # TODO: I have coded the sigmoid activation, you have to do the rest
+        if activation == "sigmoid":
+            self.X_hidden_test = self.__sigmoid(in_hidden)
+        elif activation == "tanh":
+            self.X_hidden_test = self.__tanh(in_hidden)
+        elif activation == "ReLu":
+            self.X_hidden_test = self.__ReLu(in_hidden)
+        
+        in_output = np.dot(self.X_hidden_test, self.W_output) + self.Wb_output
+        
+        if activation == "sigmoid":
+            out = self.__sigmoid(in_output)
+        elif activation == "tanh":
+            out = self.__tanh(in_output)
+        elif activation == "ReLu":
+            out = self.__ReLu(in_output)
+        return out
 
 
 if __name__ == "__main__":
