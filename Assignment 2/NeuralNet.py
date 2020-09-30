@@ -27,24 +27,20 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 
 class NeuralNet:
-    def __init__(self, dataFile, header=True, h=4):
+    def __init__(self, dataFile, header=True, h=3):
         #np.random.seed(1)
         # train refers to the training dataset
         # test refers to the testing dataset
         # h represents the number of neurons in the hidden layer
-        #raw_input = pd.read_csv(dataFile)
-        # TODO: Remember to implement the preprocess method
+
         self.X, self.xTest, self.y, self.yTest = self.preprocessData(dataFile)
-        #self.train_dataset, self.test_dataset = train_test_split(processed_data)
+
         ncols = len(self.X[0])
         nrows = len(self.X)
-        #self.X = self.train_dataset.iloc[:, 0:(ncols -1)].values.reshape(nrows, ncols-1)
-        #self.y = self.train_dataset.iloc[:, (ncols-1)].values.reshape(nrows, 1)
-        #
+
         # Find number of input and output layers from the dataset
-        #
         self.y = np.reshape(self.y,(nrows,1))
-        input_layer_size = len(self.X[1])
+        input_layer_size = len(self.X[0])
         if not isinstance(self.y[0], np.ndarray):
             self.output_layer_size = 1
         else:
@@ -61,11 +57,7 @@ class NeuralNet:
         self.deltaOut = np.zeros((self.output_layer_size, 1))
         self.deltaHidden = np.zeros((h, 1))
         self.h = h
-
-    #
-    # TODO: I have coded the sigmoid activation function, you need to do the same for tanh and ReLu
-    #
-        
+    # Define activation functions
     def __activation(self, x, activation="sigmoid"):
         if activation == "sigmoid":
             self.__sigmoid(self, x)
@@ -73,11 +65,8 @@ class NeuralNet:
             self.__tanh(self,x)
         if activation=="relu":
             self.__relu(self,x)
-
-    #
-    # TODO: Define the derivative function for tanh, ReLu and their derivatives
-    #
-
+            
+    # Define derivative of activation functions
     def __activation_derivative(self, x, activation="sigmoid"):
         if activation == "sigmoid":
             self.__sigmoid_derivative(self, x)
@@ -85,7 +74,8 @@ class NeuralNet:
             self.__tanh_derivative(self,x)
         if activation=="relu":
             self.__relu_derivative(self,x)
-
+    
+    # Define individual activation functions
     def __sigmoid(self, x):
         return 1 / (1 + np.exp(-x))
     
@@ -95,8 +85,7 @@ class NeuralNet:
     def __relu(self, x):
         return np.maximum(0,x)
 
-    # derivative of sigmoid function, indicates confidence about existing weight
-
+    # Define individual deivatives
     def __sigmoid_derivative(self, x):
         return x * (1 - x)
     
@@ -107,16 +96,14 @@ class NeuralNet:
         return np.heavside(x,0.0)
         
 
-
-
     # Below is the training function
 
-    def train(self, max_iterations=6000, learning_rate=0.25):
+    def train(self, activation = "sigmoid",max_iterations=15000, learning_rate=0.011):
         for iteration in range(max_iterations):
-            out = self.forward_pass(self.X)
+            out = self.forward_pass(self.X, activation)
             error = 0.5 * np.power((out - self.y), 2)
             # TODO: I have coded the sigmoid activation, you have to do the rest
-            self.backward_pass(out, activation="sigmoid")
+            self.backward_pass(out, activation)
 
             update_weight_output = learning_rate * np.dot(self.X_hidden.T, self.deltaOut)
             update_weight_output_b = learning_rate * np.dot(np.ones((np.size(self.X, 0), 1)).T, self.deltaOut)
@@ -202,16 +189,18 @@ class NeuralNet:
         
         # Columns desciption:
         # Front | Left | Right | Back | Motion type
-        df[[24]] = df[[24]].replace(to_replace = "Move-Forward", value = 0)
-        df[[24]] = df[[24]].replace(to_replace = "Slight-Right-Turn", value = 0.01)
-        df[[24]] = df[[24]].replace(to_replace = "Slight-Left-Turn", value = -0.01)
-        df[[24]] = df[[24]].replace(to_replace = "Sharp-Right-Turn", value = 0.02)
+        lastCol = 4
+        # Convert motion type to binary values:
+        df[[lastCol]] = df[[lastCol]].replace(to_replace = "Move-Forward", value = 1)
+        df[[lastCol]] = df[[lastCol]].replace(to_replace = "Slight-Right-Turn", value = 0)
+        df[[lastCol]] = df[[lastCol]].replace(to_replace = "Slight-Left-Turn", value = 0)
+        df[[lastCol]] = df[[lastCol]].replace(to_replace = "Sharp-Right-Turn", value = 0)
         
-        x = df.iloc[:,0:24]
-        y = df.iloc[:,24]
+        x = df.iloc[:,0:4] # Extract x values from data frame
+        y = df.iloc[:,4]   # Extract y values from data frame
         
-        from sklearn.model_selection import train_test_split
-        xTrain, xTest, yTrain, yTest = train_test_split(x, y, train_size = 0.80) # Add random_state = 3 to get consistent data similar to the report
+        #from sklearn.model_selection import train_test_split
+        xTrain, xTest, yTrain, yTest = train_test_split(x, y, train_size = 0.80, random_state = 3) # Add random_state = 3 to get consistent data similar to the report
             
         # Compute sde, mean of the data  
         scaler = StandardScaler()
@@ -219,11 +208,12 @@ class NeuralNet:
             
         # Transform the x data
         xTrain = scaler.transform(xTrain)
-        xTest = scaler.transform(xTest)
+        xTest  = scaler.transform(xTest)
                   
         # Convert y data to lists
         yTrain = yTrain.tolist()
-        yTest = yTest.tolist()
+        yTest  = yTest.tolist()
+        
         return xTrain, xTest, yTrain, yTest
     
     
@@ -232,7 +222,12 @@ if __name__ == "__main__":
     # perform pre-processing of both training and test part of the test_dataset
     # split into train and test parts if needed
     #preprocessData("https://archive.ics.uci.edu/ml/machine-learning-databases/00194/sensor_readings_24.data")
-    neural_network = NeuralNet("https://archive.ics.uci.edu/ml/machine-learning-databases/00194/sensor_readings_24.data")
-    neural_network.train()
-    testError = neural_network.predict()
+    neural_network = NeuralNet("https://archive.ics.uci.edu/ml/machine-learning-databases/00194/sensor_readings_4.data")
+    activationFunc = "sigmoid"
+    neural_network.train(activationFunc)
+    testError = neural_network.predict(activation=activationFunc)
     print("Test error = " + str(testError))
+    print('Test values:')
+    print(neural_network.yTest[:30])
+    print('Predicted values:')
+    print(neural_network.yPredict[:30])
