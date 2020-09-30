@@ -104,10 +104,7 @@ class NeuralNet:
         return (1 - x**2)
     
     def __relu_derivative(self, x):
-        if x<=0:
-            return 0
-        else:
-            return 1
+        return np.heavside(x,0.0)
         
 
 
@@ -210,7 +207,7 @@ class NeuralNet:
         df[[24]] = df[[24]].replace(to_replace = "Slight-Left-Turn", value = -0.01)
         df[[24]] = df[[24]].replace(to_replace = "Sharp-Right-Turn", value = 0.02)
         
-        x = df.iloc[:,0:23]
+        x = df.iloc[:,0:24]
         y = df.iloc[:,24]
         
         from sklearn.model_selection import train_test_split
