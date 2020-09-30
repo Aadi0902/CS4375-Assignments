@@ -27,7 +27,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 
 class NeuralNet:
-    def __init__(self, dataFile, header=True, h=3):
+    def __init__(self, dataFile, header=True, h=6):
         #np.random.seed(1)
         # train refers to the training dataset
         # test refers to the testing dataset
@@ -39,7 +39,7 @@ class NeuralNet:
         nrows = len(self.X)
 
         # Find number of input and output layers from the dataset
-        self.y = np.reshape(self.y,(nrows,1))
+        #self.y = np.reshape(self.y,(nrows,1))
         input_layer_size = len(self.X[0])
         if not isinstance(self.y[0], np.ndarray):
             self.output_layer_size = 1
@@ -98,7 +98,7 @@ class NeuralNet:
 
     # Below is the training function
 
-    def train(self, activation = "sigmoid",max_iterations=15000, learning_rate=0.011):
+    def train(self, activation = "sigmoid",max_iterations=8000, learning_rate=0.001):
         for iteration in range(max_iterations):
             out = self.forward_pass(self.X, activation)
             error = 0.5 * np.power((out - self.y), 2)
@@ -177,7 +177,7 @@ class NeuralNet:
     def predict(self,activation = "sigmoid", header = True):
         # TODO: obtain prediction on self.test_dataset
         self.yPredict = self.forward_pass(self.xTest,activation)
-        self.yPredict = self.yPredict.flatten()
+        #self.yPredict = self.yPredict.flatten()
         diff = self.yPredict - self.yTest
         testError = 0.5 * np.dot(diff.T,diff)
         return testError
@@ -189,15 +189,26 @@ class NeuralNet:
         
         # Columns desciption:
         # Front | Left | Right | Back | Motion type
-        lastCol = 4
+        lastCol        = 4 # Column containing classification values
+        totClassifiers = 4 # Total Binary classifiers 
         # Convert motion type to binary values:
-        df[[lastCol]] = df[[lastCol]].replace(to_replace = "Move-Forward", value = 1)
-        df[[lastCol]] = df[[lastCol]].replace(to_replace = "Slight-Right-Turn", value = 0)
-        df[[lastCol]] = df[[lastCol]].replace(to_replace = "Slight-Left-Turn", value = 0)
-        df[[lastCol]] = df[[lastCol]].replace(to_replace = "Sharp-Right-Turn", value = 0)
+#        df[[lastCol]] = df[[lastCol]].replace(to_replace = "Move-Forward", value = 1)
+#        df[[lastCol]] = df[[lastCol]].replace(to_replace = "Slight-Right-Turn", value = 0)
+#        df[[lastCol]] = df[[lastCol]].replace(to_replace = "Slight-Left-Turn", value = 0)
+#        df[[lastCol]] = df[[lastCol]].replace(to_replace = "Sharp-Right-Turn", value = 0)
+        tempCol = df[[lastCol]]
+        for i in range(totClassifiers):
+            value           = np.zeros(totClassifiers)
+            value[i]        = 1
+            df[[lastCol+i]] = tempCol
+            df[[lastCol+i]] = df[[lastCol+i]].replace(to_replace = "Move-Forward",      value = value[0])
+            df[[lastCol+i]] = df[[lastCol+i]].replace(to_replace = "Slight-Right-Turn", value = value[1])
+            df[[lastCol+i]] = df[[lastCol+i]].replace(to_replace = "Slight-Left-Turn",  value = value[2])
+            df[[lastCol+i]] = df[[lastCol+i]].replace(to_replace = "Sharp-Right-Turn",  value = value[3])
+
         
-        x = df.iloc[:,0:4] # Extract x values from data frame
-        y = df.iloc[:,4]   # Extract y values from data frame
+        x = df.iloc[:,0:lastCol] # Extract x values from data frame
+        y = df.iloc[:,lastCol:lastCol+totClassifiers+1]   # Extract y values from data frame
         
         #from sklearn.model_selection import train_test_split
         xTrain, xTest, yTrain, yTest = train_test_split(x, y, train_size = 0.80, random_state = 3) # Add random_state = 3 to get consistent data similar to the report
@@ -211,8 +222,8 @@ class NeuralNet:
         xTest  = scaler.transform(xTest)
                   
         # Convert y data to lists
-        yTrain = yTrain.tolist()
-        yTest  = yTest.tolist()
+        yTrain = yTrain.to_numpy()
+        yTest  = yTest.to_numpy()
         
         return xTrain, xTest, yTrain, yTest
     
