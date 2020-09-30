@@ -108,22 +108,19 @@ class NeuralNet:
         return (1 - x**2)
     
     def __relu_derivative(self, x):
-        if x<=0:
-            return 0
-        else:
-            return 1
+        return np.heaviside(x, 0.0)
         
 
 
 
     # Below is the training function
 
-    def train(self, max_iterations=6000, learning_rate=0.5):
+    def train(self, max_iterations=6000, learning_rate=0.5, activationFunction="sigmoid"):
         for iteration in range(max_iterations):
-            out = self.forward_pass(self.X)
+            out = self.forward_pass(self.X, activation=activationFunction)
             error = 0.5 * np.power((out - self.y), 2)
             # TODO: I have coded the sigmoid activation, you have to do the rest
-            self.backward_pass(out, activation="sigmoid")
+            self.backward_pass(out, activation=activationFunction)
 
             update_weight_output = learning_rate * np.dot(self.X_hidden2.T, self.deltaOut)
             update_weight_output_b = learning_rate * np.dot(np.ones((np.size(self.X, 0), 1)).T, self.deltaOut)
@@ -169,7 +166,7 @@ class NeuralNet:
             self.X_hidden2 = self.__relu(in_hidden2)         
             
         in_output = np.dot(self.X_hidden2, self.W_output) + self.Wb_output
-        
+     
         if activation == "sigmoid":
             out = self.__sigmoid(in_output)
         elif activation == "tanh":
@@ -227,6 +224,7 @@ class NeuralNet:
         testError = 0.5 * np.dot(diff.T,diff)
         return testError
 
+
     def preprocessData(self,datafile):
         df = pd.read_csv(datafile,header=None,delimiter = ",",na_values=[" "])
         # Drop empty rows i.e. rows with " "
@@ -234,13 +232,14 @@ class NeuralNet:
         
         # Columns desciption:
         # Front | Left | Right | Back | Motion type
-        df[[24]] = df[[24]].replace(to_replace = "Move-Forward", value = 0)
-        df[[24]] = df[[24]].replace(to_replace = "Slight-Right-Turn", value = 1)
-        df[[24]] = df[[24]].replace(to_replace = "Slight-Left-Turn", value = -1)
-        df[[24]] = df[[24]].replace(to_replace = "Sharp-Right-Turn", value = 3)
+        l = 4
+        df[[l]] = df[[l]].replace(to_replace = "Move-Forward", value = 0.33)
+        df[[l]] = df[[l]].replace(to_replace = "Slight-Right-Turn", value = 0.66)
+        df[[l]] = df[[l]].replace(to_replace = "Slight-Left-Turn", value = 0.01)
+        df[[l]] = df[[l]].replace(to_replace = "Sharp-Right-Turn", value = 0.99)
         
-        x = df.iloc[:,0:23]
-        y = df.iloc[:,24]
+        x = df.iloc[:,0:l-1]
+        y = df.iloc[:,l]
         
         xTrain, xTest, yTrain, yTest = train_test_split(x, y, train_size = 0.80) # Add random_state = 3 to get consistent data similar to the report
             
@@ -263,8 +262,12 @@ if __name__ == "__main__":
     # perform pre-processing of both training and test part of the test_dataset
     # split into train and test parts if needed
     #preprocessData("https://archive.ics.uci.edu/ml/machine-learning-databases/00194/sensor_readings_24.data")
-    neural_network = NeuralNet("https://archive.ics.uci.edu/ml/machine-learning-databases/00194/sensor_readings_24.data")
-
-    neural_network.train()
-    testError = neural_network.predict()
+    neural_network = NeuralNet("https://archive.ics.uci.edu/ml/machine-learning-databases/00194/sensor_readings_4.data")
+    activationFunc = "relu"
+    neural_network.train(activationFunction=activationFunc)
+    testError = neural_network.predict(activation=activationFunc)
     print("Test error = " + str(testError))
+    print('Test values:')
+    print(neural_network.yTest[:30])
+    print('Predicted values:')
+    print(neural_network.yPredict[:30])
