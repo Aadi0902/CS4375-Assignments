@@ -98,8 +98,8 @@ class NeuralNet:
 
     # Below is the training function
 
-    def train(self, activation = "sigmoid",max_iterations=15000, learning_rate=0.0001): 
-        # learning rate: sigmoid -> 0.001, tanh->0.0001, relu->
+    def train(self, activation = "sigmoid",max_iterations=10000, learning_rate=0.00001): 
+        # learning rate: sigmoid -> 0.001, tanh->0.0001, relu-> 0.00001
         for iteration in range(max_iterations):
             out = self.forward_pass(self.X, activation)
             error = 0.5 * np.power((out - self.y), 2)
@@ -180,7 +180,7 @@ class NeuralNet:
         self.yPredict = self.forward_pass(self.xTest,activation)
         #self.yPredict = self.yPredict.flatten()
         diff = self.yPredict - self.yTest
-        testError = 0.5 * np.dot(diff.T,diff)
+        testError = 0.5 * np.sum(np.square(diff), axis = 0)
         return testError
 
     def preprocessData(self,datafile):
@@ -212,7 +212,7 @@ class NeuralNet:
         y = df.iloc[:,lastCol:lastCol+totClassifiers+1]   # Extract y values from data frame
         
         #from sklearn.model_selection import train_test_split
-        xTrain, xTest, yTrain, yTest = train_test_split(x, y, train_size = 0.80) # Add random_state = 3 to get consistent data similar to the report
+        xTrain, xTest, yTrain, yTest = train_test_split(x, y, train_size = 0.80, random_state=3) # Add random_state = 3 to get consistent data similar to the report
             
         # Compute sde, mean of the data  
         scaler = StandardScaler()
