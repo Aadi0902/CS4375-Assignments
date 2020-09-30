@@ -93,12 +93,13 @@ class NeuralNet:
         return (1 - x**2)
     
     def __relu_derivative(self, x):
-        return np.heavside(x,0.0)
+        return np.heaviside(x,0.0)
         
 
     # Below is the training function
 
-    def train(self, activation = "sigmoid",max_iterations=8000, learning_rate=0.001):
+    def train(self, activation = "sigmoid",max_iterations=15000, learning_rate=0.0001): 
+        # learning rate: sigmoid -> 0.001, tanh->0.0001, relu->
         for iteration in range(max_iterations):
             out = self.forward_pass(self.X, activation)
             error = 0.5 * np.power((out - self.y), 2)
@@ -211,7 +212,7 @@ class NeuralNet:
         y = df.iloc[:,lastCol:lastCol+totClassifiers+1]   # Extract y values from data frame
         
         #from sklearn.model_selection import train_test_split
-        xTrain, xTest, yTrain, yTest = train_test_split(x, y, train_size = 0.80, random_state = 3) # Add random_state = 3 to get consistent data similar to the report
+        xTrain, xTest, yTrain, yTest = train_test_split(x, y, train_size = 0.80) # Add random_state = 3 to get consistent data similar to the report
             
         # Compute sde, mean of the data  
         scaler = StandardScaler()
@@ -234,7 +235,7 @@ if __name__ == "__main__":
     # split into train and test parts if needed
     #preprocessData("https://archive.ics.uci.edu/ml/machine-learning-databases/00194/sensor_readings_24.data")
     neural_network = NeuralNet("https://archive.ics.uci.edu/ml/machine-learning-databases/00194/sensor_readings_4.data")
-    activationFunc = "sigmoid"
+    activationFunc = "relu"
     neural_network.train(activationFunc)
     testError = neural_network.predict(activation=activationFunc)
     print("Test error = " + str(testError))
