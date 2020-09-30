@@ -27,7 +27,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 
 class NeuralNet:
-    def __init__(self, dataFile, header=True, h=40, h2=20):
+    def __init__(self, dataFile, header=True, h=4, h2=3):
         #np.random.seed(1)
         # train refers to the training dataset
         # test refers to the testing dataset
@@ -233,15 +233,15 @@ class NeuralNet:
         # Columns desciption:
         # Front | Left | Right | Back | Motion type
         l = 4
-        df[[l]] = df[[l]].replace(to_replace = "Move-Forward", value = 0.33)
-        df[[l]] = df[[l]].replace(to_replace = "Slight-Right-Turn", value = 0.66)
-        df[[l]] = df[[l]].replace(to_replace = "Slight-Left-Turn", value = 0.01)
-        df[[l]] = df[[l]].replace(to_replace = "Sharp-Right-Turn", value = 0.99)
+        df[[l]] = df[[l]].replace(to_replace = "Move-Forward", value = 0.5)
+        df[[l]] = df[[l]].replace(to_replace = "Slight-Right-Turn", value = 0.5 )
+        df[[l]] = df[[l]].replace(to_replace = "Slight-Left-Turn", value = 0.5)
+        df[[l]] = df[[l]].replace(to_replace = "Sharp-Right-Turn", value = 0.5)
         
-        x = df.iloc[:,0:l-1]
+        x = df.iloc[:,0:l]
         y = df.iloc[:,l]
         
-        xTrain, xTest, yTrain, yTest = train_test_split(x, y, train_size = 0.80) # Add random_state = 3 to get consistent data similar to the report
+        xTrain, xTest, yTrain, yTest = train_test_split(x, y, train_size = 0.80, random_state=4) # Add random_state = 3 to get consistent data similar to the report
             
         # Compute sde, mean of the data  
         scaler = StandardScaler()
@@ -263,10 +263,12 @@ if __name__ == "__main__":
     # split into train and test parts if needed
     #preprocessData("https://archive.ics.uci.edu/ml/machine-learning-databases/00194/sensor_readings_24.data")
     neural_network = NeuralNet("https://archive.ics.uci.edu/ml/machine-learning-databases/00194/sensor_readings_4.data")
-    activationFunc = "relu"
+    activationFunc = "sigmoid"
     neural_network.train(activationFunction=activationFunc)
     testError = neural_network.predict(activation=activationFunc)
     print("Test error = " + str(testError))
+    print('X values:')
+    print(neural_network.X[:30])
     print('Test values:')
     print(neural_network.yTest[:30])
     print('Predicted values:')
