@@ -206,9 +206,9 @@ class NeuralNet:
         # Columns desciption:
         # Front | Left | Right | Back | Motion type
         df[[24]] = df[[24]].replace(to_replace = "Move-Forward", value = 0)
-        df[[24]] = df[[24]].replace(to_replace = "Slight-Right-Turn", value = 1)
-        df[[24]] = df[[24]].replace(to_replace = "Slight-Left-Turn", value = -1)
-        df[[24]] = df[[24]].replace(to_replace = "Sharp-Right-Turn", value = 2)
+        df[[24]] = df[[24]].replace(to_replace = "Slight-Right-Turn", value = 0.01)
+        df[[24]] = df[[24]].replace(to_replace = "Slight-Left-Turn", value = -0.01)
+        df[[24]] = df[[24]].replace(to_replace = "Sharp-Right-Turn", value = 0.02)
         
         x = df.iloc[:,0:23]
         y = df.iloc[:,24]
