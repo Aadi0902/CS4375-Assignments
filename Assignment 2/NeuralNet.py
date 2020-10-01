@@ -1,13 +1,18 @@
 #####################################################################################################################
 #   Assignment 2: Neural Network Programming
-#   This is a starter code in Python 3.6 for a 1-hidden-layer neural network.
+#   Author: Aadi Kothari and Andrew Su
 #   You need to have numpy and pandas installed before running this code.
 #   Below are the meaning of symbols:
 #   NeuralNet class init method takes file path as parameter and splits it into train and test part
 #         - it assumes that the last column will the label (output) column
-#   h - number of neurons in the hidden layer
-#   X - vector of features for each instance
-#   y - output for each instance
+#   h             - number of neurons in the hidden layer
+#   X             - vector of features for trainging instances
+#   xTest         - vector of features for testing instances
+#   y             - output for each training instance
+#   yTest         - output for each testing instance in integer array form
+#   yTestString   - ouptput for each testing instance in String form (Type of motion)
+#   yPredict      - output for each predicted instacne in integer array form
+#   yPredctString - output for each predicted instance in String form (Type of motion)
 #   W_hidden - weight matrix connecting input to hidden layer
 #   Wb_hidden - bias matrix for the hidden layer
 #   W_output - weight matrix connecting hidden layer to output layer
@@ -98,7 +103,7 @@ class NeuralNet:
 
     # Below is the training function
 
-    def train(self, activation = "sigmoid",max_iterations=10000, learning_rate=0.00001): 
+    def train(self, activation = "sigmoid",max_iterations = 15000, learning_rate=0.001): 
         # learning rate: sigmoid -> 0.001, tanh->0.0001, relu-> 0.00001
         for iteration in range(max_iterations):
             out = self.forward_pass(self.X, activation)
@@ -191,15 +196,12 @@ class NeuralNet:
         # Columns desciption:
         # Front | Left | Right | Back | Motion type
         lastCol        = 4 # Column containing classification values
-        totClassifiers = 4 # Total Binary classifiers 
+        self.totClassifiers = 4 # Total Binary classifiers 
+        
         # Convert motion type to binary values:
-#        df[[lastCol]] = df[[lastCol]].replace(to_replace = "Move-Forward", value = 1)
-#        df[[lastCol]] = df[[lastCol]].replace(to_replace = "Slight-Right-Turn", value = 0)
-#        df[[lastCol]] = df[[lastCol]].replace(to_replace = "Slight-Left-Turn", value = 0)
-#        df[[lastCol]] = df[[lastCol]].replace(to_replace = "Sharp-Right-Turn", value = 0)
         tempCol = df[[lastCol]]
-        for i in range(totClassifiers):
-            value           = np.zeros(totClassifiers)
+        for i in range(self.totClassifiers):
+            value           = np.zeros(self.totClassifiers)
             value[i]        = 1
             df[[lastCol+i]] = tempCol
             df[[lastCol+i]] = df[[lastCol+i]].replace(to_replace = "Move-Forward",      value = value[0])
@@ -209,7 +211,7 @@ class NeuralNet:
 
         
         x = df.iloc[:,0:lastCol] # Extract x values from data frame
-        y = df.iloc[:,lastCol:lastCol+totClassifiers+1]   # Extract y values from data frame
+        y = df.iloc[:,lastCol:lastCol + self.totClassifiers+1]   # Extract y values from data frame
         
         #from sklearn.model_selection import train_test_split
         xTrain, xTest, yTrain, yTest = train_test_split(x, y, train_size = 0.80, random_state=3) # Add random_state = 3 to get consistent data similar to the report
@@ -228,18 +230,38 @@ class NeuralNet:
         
         return xTrain, xTest, yTrain, yTest
     
-    
-
+    # Converts the predicted 2D array for multi binary classification to string representation
+    def postProcess(self):
+        outVal = np.array(["Move-Forward", "Slight-Right-Turn", "Slight-Left-Turn", "Sharp-Right-Turn"])
+        self.yTestString = ["" for ind in range(len(self.yTest))]
+        self.yPredictString = ["" for ind in range(len(self.yPredict))]
+        diff = [0 for ind in range (len(self.yPredict))]
+        
+        for ind in range(len(self.yTest)):
+            self.yTestString[ind] = outVal[np.argmax(self.yTest, axis = 1)[ind]]
+            self.yPredictString[ind] = outVal[np.argmax(self.yPredict, axis = 1)[ind]]
+            
+            if not self.yTestString == self.yPredictString: 
+                diff[ind] = 1 # If the two values are different then the diffrence is 1
+        
+        testError = 0.5 * np.sum(np.square(diff), axis = 0)
+        return testError
+        
 if __name__ == "__main__":
     # perform pre-processing of both training and test part of the test_dataset
     # split into train and test parts if needed
     #preprocessData("https://archive.ics.uci.edu/ml/machine-learning-databases/00194/sensor_readings_24.data")
     neural_network = NeuralNet("https://archive.ics.uci.edu/ml/machine-learning-databases/00194/sensor_readings_4.data")
-    activationFunc = "relu"
+    activationFunc = "sigmoid"
     neural_network.train(activationFunc)
     testError = neural_network.predict(activation=activationFunc)
     print("Test error = " + str(testError))
-    print('Test values:')
-    print(neural_network.yTest[:30])
-    print('Predicted values:')
-    print(neural_network.yPredict[:30])
+    
+    # Convert predicted values back to string
+    testError = neural_network.postProcess()
+    print("First 30 values:\n")
+    print("Predicted Motion \t Actual Motion\n")
+    for ind in range(30):
+      print("%-17s \t %s" % (neural_network.yPredictString[ind],neural_network.yTestString[ind]))
+    print("Test error on binary values:" + str(testError))
+
