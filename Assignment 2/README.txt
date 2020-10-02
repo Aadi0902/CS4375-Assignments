@@ -5,8 +5,9 @@ Aadi Kothari and Andrew Su
 
 Directions:
 1. Open NeuralNet.py
-2. Change activationFunc variable in line 255 to switch activation functions (sigmoid, tanh, relu)
-3. Run NeuralNet.py
+2. Change activationFunc variable in line 249 to switch activation functions (sigmoid, tanh, relu). Sigmoid is default.
+3. Change max_iterations or learning_rate on line 250. 5000 and 0.001 are defaults.
+4. Run NeuralNet.py
 
 Files:
 1. NeuralNet.py - This file contains the entire project, including the preprocesing, 
