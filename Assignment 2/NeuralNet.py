@@ -38,9 +38,6 @@ class NeuralNet:
 
         self.X, self.xTest, self.y, self.yTest = self.preprocessData(dataFile)
 
-        ncols = len(self.X[0])
-        nrows = len(self.X)
-
         # Find number of input and output layers from the dataset
         #self.y = np.reshape(self.y,(nrows,1))
         input_layer_size = len(self.X[0])
@@ -250,7 +247,7 @@ if __name__ == "__main__":
     #preprocessData("https://archive.ics.uci.edu/ml/machine-learning-databases/00194/sensor_readings_24.data")
     neural_network = NeuralNet("https://archive.ics.uci.edu/ml/machine-learning-databases/00194/sensor_readings_4.data")
     activationFunc = "sigmoid" # "sigmoid" "tanh" or "relu"
-    neural_network.train(activationFunc)
+    neural_network.train(activationFunc,max_iterations=5000, learning_rate=0.001)
     testError = neural_network.predict(activation=activationFunc)
     print("Test error = " + str(testError))
     
@@ -261,4 +258,5 @@ if __name__ == "__main__":
     for ind in range(30):
       print("%-17s \t %s" % (neural_network.yPredictString[ind],neural_network.yTestString[ind]))
     print("Number of predicted classifications that differed from actual values: " + str(testError))
+
 
