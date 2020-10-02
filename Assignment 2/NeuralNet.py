@@ -20,8 +20,6 @@
 #   deltaOut - delta for output unit (see slides for definition)
 #   deltaHidden - delta for hidden unit (see slides for definition)
 #   other symbols have self-explanatory meaning
-#   You need to complete all TODO marked sections
-#   You are free to modify this code in any way you want, but need to mention it in the README file.
 #
 #####################################################################################################################
 
@@ -32,7 +30,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 
 class NeuralNet:
-    def __init__(self, dataFile, header=True, h=6):
+    def __init__(self, dataFile, header=True, h=5):
         #np.random.seed(1)
         # train refers to the training dataset
         # test refers to the testing dataset
@@ -103,7 +101,7 @@ class NeuralNet:
 
     # Below is the training function
 
-    def train(self, activation = "sigmoid",max_iterations = 15000, learning_rate=0.001): 
+    def train(self, activation = "sigmoid",max_iterations = 5000, learning_rate=0.0001): 
         # learning rate: sigmoid -> 0.001, tanh->0.0001, relu-> 0.00001
         for iteration in range(max_iterations):
             out = self.forward_pass(self.X, activation)
@@ -235,24 +233,23 @@ class NeuralNet:
         outVal = np.array(["Move-Forward", "Slight-Right-Turn", "Slight-Left-Turn", "Sharp-Right-Turn"])
         self.yTestString = ["" for ind in range(len(self.yTest))]
         self.yPredictString = ["" for ind in range(len(self.yPredict))]
-        diff = [0 for ind in range (len(self.yPredict))]
+        diff = 0
         
         for ind in range(len(self.yTest)):
             self.yTestString[ind] = outVal[np.argmax(self.yTest, axis = 1)[ind]]
             self.yPredictString[ind] = outVal[np.argmax(self.yPredict, axis = 1)[ind]]
             
-            if not self.yTestString == self.yPredictString: 
-                diff[ind] = 1 # If the two values are different then the diffrence is 1
+            if not self.yPredictString[ind] == self.yTestString[ind]: 
+               diff = diff + 1
         
-        testError = 0.5 * np.sum(np.square(diff), axis = 0)
-        return testError
+        return diff
         
 if __name__ == "__main__":
     # perform pre-processing of both training and test part of the test_dataset
     # split into train and test parts if needed
     #preprocessData("https://archive.ics.uci.edu/ml/machine-learning-databases/00194/sensor_readings_24.data")
     neural_network = NeuralNet("https://archive.ics.uci.edu/ml/machine-learning-databases/00194/sensor_readings_4.data")
-    activationFunc = "sigmoid"
+    activationFunc = "sigmoid" # "sigmoid" "tanh" or "relu"
     neural_network.train(activationFunc)
     testError = neural_network.predict(activation=activationFunc)
     print("Test error = " + str(testError))
@@ -263,5 +260,5 @@ if __name__ == "__main__":
     print("Predicted Motion \t Actual Motion\n")
     for ind in range(30):
       print("%-17s \t %s" % (neural_network.yPredictString[ind],neural_network.yTestString[ind]))
-    print("Test error on binary values:" + str(testError))
+    print("Number of predicted classifications that differed from actual values: " + str(testError))
 
