@@ -30,7 +30,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 
 class NeuralNet:
-    def __init__(self, dataFile, header=True, h=5):
+    def __init__(self, dataFile, header=True, h=6):
         #np.random.seed(1)
         # train refers to the training dataset
         # test refers to the testing dataset
@@ -101,7 +101,7 @@ class NeuralNet:
 
     # Below is the training function
 
-    def train(self, activation = "sigmoid",max_iterations = 5000, learning_rate=0.0001): 
+    def train(self, activation = "sigmoid",max_iterations = 5000, learning_rate=0.001): 
         # learning rate: sigmoid -> 0.001, tanh->0.0001, relu-> 0.00001
         for iteration in range(max_iterations):
             out = self.forward_pass(self.X, activation)
