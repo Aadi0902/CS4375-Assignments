@@ -12,7 +12,8 @@ Directions:
 Files:
 1. NeuralNet.py - This file contains the entire project, including the preprocesing, 
     activation functions, and the back propogation algorithm.
-2. assignment2_Report.pdf - Theoretical part of the assignment 
+2. assignment2_Report.pdf - Report summarizing our results.
+3. assignment2_part1.pdf - Theoretical Part.
 
 Libraries:
 numpy (numpy.org)
