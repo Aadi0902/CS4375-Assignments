@@ -20,43 +20,53 @@ from sklearn.preprocessing import StandardScaler
 class Kmeans:
   def __init__(self,dataFile):
     df = self.preprocessData(dataFile)
+    #print(df.head())
+    jacardDist = self.makeDistanceMatrix(df)
 
   def preprocessData(self,datafile):
     df = pd.read_csv(datafile,header=None,delimiter = "|")
-    df.drop(df.columns[[1,2]],axis=1,inplace=True) #removes tweedID and timestamp
-    df[0].replace(to_replace='@*\b',value='',inplace=True,regex=True) # removes mentions
-    df[0] = df[0].replace({'#', ''}) # remove hash symboll
-    df[0].replace(to_replace='https\S+',value='',inplace=True,regex=True)#remove url
-    df[0] = df[0].str.lower() #makes all letters lower case
+    print(df.head())
+    df.drop(df.columns[[0,1]],axis=1,inplace=True) #removes tweedID and timestamp
+    df.replace(to_replace='(\s)@\w+',value='',inplace=True,regex=True) # removes mentions
+    df = df.replace({'#':''}, regex=True) # remove hash symbol
+    df.replace(to_replace='(\s)http\S+',value='',inplace=True,regex=True)#remove url
+    #df = df.str.lower() #makes all letters lower case
+    df = df.apply(lambda x: x.astype(str).str.lower())
     return df
 
-  def jacardDistance(strList1, strList2): #
+  def jacardDistance(self, strList1, strList2): #
+      # ISSUE: If identical words in a single string list
     sameWords = 0
-    differentWords = 0
+    totWords = 0
     for word1 in strList1:
       for word2 in strList2:
         if(word1 == word2):
           sameWords += 1
-        else:
-          differentWords += 1
-    return 1 - differentWords / sameWords
+          
+    totWords = len(strList1) + len(strList2) - sameWords
+    dist = 1 - sameWords / totWords
+    print(dist)
+    return dist
 
-  def distance(df):
+  def makeDistanceMatrix(self, df):
     nElements = len(df)
     jacardDist = np.zeros((nElements,nElements))
 
     for ind1 in range(nElements):
       for ind2 in range(ind1, nElements):
-
-        jacardDist[ind1][ind2] = jacardDistance(df[ind1][0].split(), df[ind2][0].split())
+        if ind1 == ind2:
+            jacardDist[ind1][ind2] = 0
+            jacardDist[ind2][ind1] = 0
+            break
+        jacardDist[ind1][ind2] = self.jacardDistance(df[2][ind1].split(), df[2][ind2].split())
         jacardDist[ind2][ind1] = jacardDist[ind1][ind2]
-
+    print("Here")
     return jacardDist
 
   def clusters(k, df, centroids): # Clusters instances into k number of clusters
     n = len(df)
     #centroids = np.array(df.iat((int)(ind * n/k), 0)) for ind in range(k))
-    jacardDist = self.distance(df)
+    jacardDist = self.makeDistanceMatrix(df)
     clusterId = np.zeros(n)
     bins = []
     for ind in range(k):
@@ -102,3 +112,7 @@ class Kmeans:
         if newCentroids[i] != centroids[i]:
           centroidsChanged = True
       centroids = newCentroids
+
+if __name__ == "__main__":
+  kmeans = Kmeans("https://github.com/Aadi0902/CS4375-Machine-Learning-Assignments/blob/master/Assignment%203/reuters_health.txt?raw=true")
+
