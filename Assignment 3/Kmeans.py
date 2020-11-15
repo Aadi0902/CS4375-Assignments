@@ -2,11 +2,12 @@
 """
 Created on Fri Nov 13 09:36:13 2020
 
-@author: Aadi
+@author: Aadi, Andrew
 """
 
 import numpy as np
 import pandas as pd
+import random
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 
@@ -18,16 +19,17 @@ from sklearn.preprocessing import StandardScaler
 # stop when the change of centroids sum of squared distances is close to 0 (pick some tolerance)
 
 class Kmeans:
-  def __init__(self,dataFile):
+
+  def __init__(self,dataFile,k):#k is cluster count
     df = self.preprocessData(dataFile)
-    #print(df.head())
-    jacardDist = self.makeDistanceMatrix(df)
+    self.SSE = 0
+    self.jacardDist = np.zeros((len(df),len(df)))
+    centroids = self.findKMeans(df,k)
 
   def preprocessData(self,datafile):
     df = pd.read_csv(datafile,header=None,delimiter = "|")
-    print(df.head())
     df.drop(df.columns[[0,1]],axis=1,inplace=True) #removes tweedID and timestamp
-    df.replace(to_replace='(\s)@\w+',value='',inplace=True,regex=True) # removes mentions
+    df.replace(to_replace='@\w+',value='',inplace=True,regex=True) # removes mentions
     df = df.replace({'#':''}, regex=True) # remove hash symbol
     df.replace(to_replace='(\s)http\S+',value='',inplace=True,regex=True)#remove url
     #df = df.str.lower() #makes all letters lower case
@@ -35,84 +37,87 @@ class Kmeans:
     return df
 
   def jacardDistance(self, strList1, strList2): #
-      # ISSUE: If identical words in a single string list
-    sameWords = 0
-    totWords = 0
-    for word1 in strList1:
-      for word2 in strList2:
-        if(word1 == word2):
-          sameWords += 1
-          
-    totWords = len(strList1) + len(strList2) - sameWords
-    dist = 1 - sameWords / totWords
-    print(dist)
-    return dist
+    set1 = set(strList1)
+    set2 = set(strList2)
+    sameWords = set1 & set2
+    totalWords = set1 | set2
+    return 1 - len(sameWords) /len(totalWords)
 
   def makeDistanceMatrix(self, df):
     nElements = len(df)
-    jacardDist = np.zeros((nElements,nElements))
-
+    self.jacardDist = np.zeros((nElements,nElements))
     for ind1 in range(nElements):
       for ind2 in range(ind1, nElements):
         if ind1 == ind2:
-            jacardDist[ind1][ind2] = 0
-            jacardDist[ind2][ind1] = 0
-            break
-        jacardDist[ind1][ind2] = self.jacardDistance(df[2][ind1].split(), df[2][ind2].split())
-        jacardDist[ind2][ind1] = jacardDist[ind1][ind2]
-    print("Here")
-    return jacardDist
+            self.jacardDist[ind1][ind2] = 0
+            self.jacardDist[ind2][ind1] = 0
+            continue
+        self.jacardDist[ind1][ind2] = self.jacardDistance(df[2][ind1].split(), df[2][ind2].split())
+        self.jacardDist[ind2][ind1] = self.jacardDist[ind1][ind2]
 
-  def clusters(k, df, centroids): # Clusters instances into k number of clusters
+  def clusters(self, k, df, centroids): # Clusters instances into k number of clusters
     n = len(df)
-    #centroids = np.array(df.iat((int)(ind * n/k), 0)) for ind in range(k))
-    jacardDist = self.makeDistanceMatrix(df)
-    clusterId = np.zeros(n)
+    self.makeDistanceMatrix(df)
     bins = []
     for ind in range(k):
-      bins.append(np.array())
+      bins.append(np.array([], dtype = int))
     
     for ind1 in range(n):
-      minDistance = jacardDist[centroids[0]][ind1]
-      for ind2 in range(1, k):
-        if (jacardDist[centroids[ind2]][ind1] < minDistance):
-          minDistance = jacardDist[centroids[ind2]][ind1]
-          clusterId[ind1] = ind2
-      np.append( bins[clusterId[ind1]], ind1)
+      minDistance = self.jacardDist[centroids[0]][ind1]
+      bestCentroid = 0
+      for ind2 in range(1, k): #ind2 is cluster number (0,1,...k-1)
+        if (self.jacardDist[centroids[ind2]][ind1] < minDistance):
+          minDistance = self.jacardDist[centroids[ind2]][ind1]
+          bestCentroid = ind2
+      bins[bestCentroid] = np.append( bins[bestCentroid], ind1)
 
     return bins
 
 
-  def newCentroids(k, bins): # Calculate and return the new centroids of the clusters
-    centroidIds = np.zeros(k)
-
+  def newCentroids(self, k, bins): # Calculate and return the new centroids of the clusters
+    centroids = np.zeros((k), int)
+    SSE = 0
     for i in range(k):
-      n = len(bins[k])
-      bin = bins[k]
+      bin = bins[i]
+      binSize = len(bin)
       minSSE = 0
-      for ind1 in range(n):
-        sse = 0
-        for ind2 in range(n):
-          sse += jacardDist[bin[ind1][bin[ind2]]] ** 2 #summing the square distances of points
+  
+      for ind1 in range(binSize): # loop 91
+        #ind1 is a new potential candidate for bin i
+        tempSSE = 0
+        for ind2 in range(binSize): # Loop 93
+          # ind2 is a new instance for distance
+          tempSSE += self.jacardDist[bin[ind1]][bin[ind2]] ** 2 #summing the square distances of points
+        # we have the new bin SSE for the potential new centroid for bin i
+        if ind1 == 0 or minSSE > tempSSE: # check if ind1 can be the new centroid
+          minSSE = tempSSE
+          centroids[i] = bin[ind1]
+      #minSSE is SSE of bin i
+      SSE += minSSE
+    self.SSE = SSE
+    return centroids
 
-        if ind1 == 0 or minSSE > sse:
-          minSSE = sse
-          centroidIDs[i] = bin[ind1]
-
-    return centroidIDs
-
-  def findKMeans(df, k):
-    centroids = np.array((ind * n/k) for ind in range(k)) # Random centroids
+  def findKMeans(self, df, k):
+    centroids = np.array(random.sample(range(0, len(df)), k), dtype=int) #generate random centroids initially
+    newCentroids = centroids
     centroidsChanged = True
     while(centroidsChanged):
-      bins = clusters(k, df, centroids)
-      newCentroids = newCentroids(k, bins)      
+      bins = self.clusters(k, df, centroids)
+      newCentroids = self.newCentroids(k, bins)
       centroidsChanged = False
       for i in range(k):
         if newCentroids[i] != centroids[i]:
           centroidsChanged = True
       centroids = newCentroids
+  
+    print("Cluster 1 size: "+str(len(bins[0])))
+    print("Cluster 2 size: "+str(len(bins[1])))
+    print("Cluster "+str(len(bins))+" size : "+str(len(bins[len(bins)-1])))
+    print("\nSSE: "+str(self.SSE))
+    return centroids
 
 if __name__ == "__main__":
-  kmeans = Kmeans("https://github.com/Aadi0902/CS4375-Machine-Learning-Assignments/blob/master/Assignment%203/reuters_health.txt?raw=true")
-
+  k = 10
+  print("k = "+str(k))
+  print("")
+  kmeans = Kmeans("https://raw.githubusercontent.com/Aadi0902/CS4375-Machine-Learning-Assignments/master/Assignment%203/Datasets/usnewshealth.txt", k)
