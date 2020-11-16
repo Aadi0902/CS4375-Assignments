@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 """
 Created on Fri Nov 13 09:36:13 2020
-
 @author: Aadi, Andrew
 """
 
@@ -121,3 +120,5 @@ if __name__ == "__main__":
   print("k = "+str(k))
   print("")
   kmeans = Kmeans("https://raw.githubusercontent.com/Aadi0902/CS4375-Machine-Learning-Assignments/master/Assignment%203/Datasets/usnewshealth.txt", k)
+  #kmeans = Kmeans("https://raw.githubusercontent.com/Aadi0902/CS4375-Machine-Learning-Assignments/master/Assignment%203/Datasets/small.txt", 2)
+  #small.txt used for samall dataset
