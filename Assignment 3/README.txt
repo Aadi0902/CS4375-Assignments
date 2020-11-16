@@ -4,7 +4,7 @@ Authors: Aadi Kothari and Andrew Su
 
 Directions:
 1. Open Kmeans.py
-2. You can adjust K or the dataset used in line 140 in the main method.
+2. You can adjust K or the dataset used in line 120 in the main method.
 4. Run Kmeans.py
 
 Files:
