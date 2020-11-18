@@ -4,8 +4,8 @@ Authors: Aadi Kothari and Andrew Su
 
 Directions:
 1. Open Kmeans.py
-2. You can adjust K or the dataset used in line 140 in the main method.
-4. Run Kmeans.py
+2. You can adjust K or the dataset used in line 120 in the main method.
+3. Run Kmeans.py, this will take a few minutes for main datasets, depending on machine. Use small.txt(link below) for fast results.
 
 Files:
 1. Kmeans.py - This file contains the entire project, including the preprocessing and finding kmeans
@@ -30,5 +30,4 @@ US News Health tweets
 Dataset link:
 https://raw.githubusercontent.com/Aadi0902/CS4375-Machine-Learning-Assignments/master/Assignment%203/Datasets/usnewshealth.txt
 
-This dataset contains tweet data from US News Health section.  There is additional data like tweet number and urls that are removed
-from in preprocessing.
+This dataset contains tweet data from US News Health section.  There is additional data like tweet number and urls that are removed in preprocessing.
