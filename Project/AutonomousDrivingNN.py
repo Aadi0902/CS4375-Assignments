@@ -85,8 +85,6 @@ class NeuralNet:
             self.__sigmoid(self, x)
         if activation == "tanh":
             self.__tanh(self, x)
-        if activation == "relu":
-            self.__relu(self, x)
 
     # Define derivative of activation functions
     def __activation_derivative(self, x, activation="sigmoid"):
@@ -94,8 +92,7 @@ class NeuralNet:
             self.__sigmoid_derivative(self, x)
         if activation == "tanh":
             self.__tanh_derivative(self, x)
-        if activation == "relu":
-            self.__relu_derivative(self, x)
+
 
     # Define individual activation functions
     def __sigmoid(self, x):
@@ -104,8 +101,6 @@ class NeuralNet:
     def __tanh(self, x):
         return ((np.exp(x) - np.exp(-x)) / (np.exp(x) + np.exp(-x)))
 
-    def __relu(self, x):
-        return np.maximum(0, x)
 
     # Define individual deivatives
     def __sigmoid_derivative(self, x):
@@ -113,9 +108,6 @@ class NeuralNet:
 
     def __tanh_derivative(self, x):
         return (1 - x**2)
-
-    def __relu_derivative(self, x):
-        return np.heaviside(x, 0.0)
 
     # Training function
     def train(self, activation="sigmoid", max_iterations=5000, learning_rate=0.001):
@@ -127,11 +119,11 @@ class NeuralNet:
             self.backward_pass(out, activation, learning_rate)
             
         print("After " + str(max_iterations)+" iterations, the total error is " + str(np.sum(error)))
-        for i in range(0, self.nHL):
-            print(f"The final weights of hidden layer {i} is {self.W_hidden[i]}.")
-            print(f"The final biases of hidden layer {i} is {self.Wb_hidden[i]}.")
-        print(f"The final weight of output layer is {self.W_output}.")
-        print(f"The final biases of output layer {self.Wb_output}.")
+        # for i in range(0, self.nHL):
+        #     print(f"The final weights of hidden layer {i} is {self.W_hidden[i]}.")
+        #     print(f"The final biases of hidden layer {i} is {self.Wb_hidden[i]}.")
+        # print(f"The final weight of output layer is {self.W_output}.")
+        # print(f"The final biases of output layer {self.Wb_output}.")
 
     # Perform forward pass
     def forward_pass(self, xValue=0, activation="sigmoid"):
@@ -148,8 +140,6 @@ class NeuralNet:
                 self.X_hidden.append(self.__sigmoid(in_hidden))
             elif activation == "tanh":
                 self.X_hidden.append(self.__tanh(in_hidden))
-            elif activation == "relu":
-                self.X_hidden.append(self.__relu(in_hidden))
 
         # Output before passing through activation function
         in_output = np.dot(self.X_hidden[self.nHL - 1], self.W_output) + self.Wb_output
@@ -158,8 +148,6 @@ class NeuralNet:
             out = self.__sigmoid(in_output)
         elif activation == "tanh":
             out = self.__tanh(in_output)
-        elif activation == "relu":
-            out = self.__relu(in_output)
 
         return out
     
@@ -173,6 +161,7 @@ class NeuralNet:
         self.compute_output_delta(out, activation)
         self.compute_hidden_delta(activation)
     
+    # Calulate weights
     def weights_calculation(self, learning_rate = 0.001):
         # Calculate W_output last X_hidden - x value of last hidden layer
         self.W_output += learning_rate * np.dot(self.X_hidden[self.nHL - 1].T, self.deltaOut)
@@ -192,8 +181,6 @@ class NeuralNet:
             delta_output = np.multiply((self.y - out), self.__sigmoid_derivative(out)) # Element wise multiplication
         elif activation == "tanh":
             delta_output = np.multiply((self.y - out), self.__tanh_derivative(out)) # Element wise multiplication
-        elif activation == "relu":
-            delta_output = np.multiply((self.y - out), self.__relu_derivative(out)) # Element wise multiplication
 
         self.deltaOut = delta_output
 
@@ -204,8 +191,6 @@ class NeuralNet:
             delta_hidden_layer = np.multiply((self.deltaOut.dot(self.W_output.T)), (self.__sigmoid_derivative(self.X_hidden[self.nHL - 1])))
         elif activation == "tanh":
             delta_hidden_layer = np.multiply((self.deltaOut.dot(self.W_output.T)), (self.__tanh_derivative(self.X_hidden[self.nHL - 1])))
-        elif activation == "relu":
-            delta_hidden_layer = np.multiply((self.deltaOut.dot(self.W_output.T)), (self.__relu_derivative(self.X_hidden[self.nHL - 1])))
         self.deltaHidden[self.nHL - 1] = delta_hidden_layer
 
         # the layers (other than last) are calculated using other deltas
@@ -214,8 +199,7 @@ class NeuralNet:
                 delta_hidden_layer = np.multiply((self.deltaHidden[i + 1].dot(self.W_hidden[i + 1].T)), (self.__sigmoid_derivative(self.X_hidden[i])))
             elif activation == "tanh":
                 delta_hidden_layer = np.multiply((self.deltaHidden[i + 1].dot(self.W_hidden[i + 1].T)), (self.__tanh_derivative(self.X_hidden[i])))
-            elif activation == "relu":
-                delta_hidden_layer = np.multiply((self.deltaHidden[i + 1].dot(self.W_hidden[i + 1].T)), (self.__relu_derivative(self.X_hidden[i])))
+
             self.deltaHidden[i] = delta_hidden_layer            
 
     # Predict function - returns test error
@@ -294,10 +278,10 @@ class NeuralNet:
 if __name__ == "__main__":
     # perform pre-processing of both training and test part of the test_dataset
     # split into train and test parts if needed
-    neural_network = NeuralNet("https://raw.githubusercontent.com/Aadi0902/CS4375-Machine-Learning-Assignments/master/Project/autonomous_arena.csv")
+    neural_network = NeuralNet("https://raw.githubusercontent.com/Aadi0902/CS4375-Machine-Learning-Assignments/master/Project/autonomous_arena.csv", h=[80, 30, 10])
     #unmodified: https://raw.githubusercontent.com/Aadi0902/CS4375-Machine-Learning-Assignments/master/Project/autonomous_arena.csv
     #modified: https://raw.githubusercontent.com/Aadi0902/CS4375-Machine-Learning-Assignments/master/Project/autonomous_arenaModified.csv
-    activationFunc = "sigmoid"  # "sigmoid" "tanh" or "relu"
+    activationFunc = "sigmoid"  # "sigmoid" "tanh"
     neural_network.train(activationFunc, max_iterations=3000, learning_rate=0.001)
     testError = neural_network.predict(activation=activationFunc)
     print("Test error = " + str(testError))
@@ -309,6 +293,6 @@ if __name__ == "__main__":
     for ind in range(0, 300, 6):
         print("%-17s \t %s" % (neural_network.yPredictString[ind], neural_network.yTestString[ind]))
 
-    for ind in range(0, 300, 6):
-        print("%-17s \t %s" % (neural_network.yPredict[ind],neural_network.yTest[ind]))
+    # for ind in range(0, 300, 6):
+    #     print("%-17s \t %s" % (neural_network.yPredict[ind],neural_network.yTest[ind]))
     print("Number of predicted classifications that differed from actual values: " + str(testError))
